@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXA BIOTECH — Research Agent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#030a06;--surface:#060f08;--surface2:#0a1a0d;--border:#0d3318;
+    --accent:#00ff6a;--accent2:#00c4ff;--accent3:#ff6bfd;--warn:#ffcc00;
+    --danger:#ff3c3c;--text:#c8ffd4;--text-dim:#4a7a55;--text-mute:#1e3b24;
+    --glow:0 0 20px rgba(0,255,106,.3);--glow2:0 0 20px rgba(0,196,255,.3);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;position:relative}
+  body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,255,106,.03)1px,transparent 1px),linear-gradient(90deg,rgba(0,255,106,.03)1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+  body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.15)2px,rgba(0,0,0,.15)4px);pointer-events:none;z-index:1}
+  .wrap{position:relative;z-index:2;max-width:1400px;margin:0 auto;padding:24px}
+
+  /* HEADER */
+  .header{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:20px;margin-bottom:28px;gap:16px;flex-wrap:wrap}
+  .logo-section{display:flex;align-items:center;gap:16px}
+  .dna-icon{width:48px;height:48px;flex-shrink:0}
+  .logo-text h1{font-family:'Orbitron',sans-serif;font-size:1.5rem;font-weight:900;color:var(--accent);text-shadow:var(--glow);letter-spacing:4px}
+  .logo-text p{font-family:'Share Tech Mono',monospace;font-size:.65rem;color:var(--text-dim);letter-spacing:3px;margin-top:2px}
+  .status-bar{display:flex;align-items:center;gap:20px;font-family:'Share Tech Mono',monospace;font-size:.7rem}
+  .status-indicator{display:flex;align-items:center;gap:6px;color:var(--text-dim)}
+  .status-dot{width:8px;height:8px;border-radius:50%;background:var(--text-dim);transition:all .3s}
+  .status-dot.active{background:var(--accent);box-shadow:0 0 8px var(--accent);animation:pulse 1.5s infinite}
+  .status-dot.scanning{background:var(--accent2);box-shadow:0 0 8px var(--accent2);animation:pulse .5s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .total-count{font-family:'Orbitron',monospace;color:var(--accent);font-size:.9rem;font-weight:700}
+
+  /* API */
+  .api-section{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:20px;margin-bottom:24px;position:relative;overflow:hidden}
+  .api-section::before{content:'GEMINI API KONFİGÜRASYONU';position:absolute;top:-1px;left:16px;font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--accent2);background:var(--surface);padding:0 8px;letter-spacing:2px}
+  .api-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:8px}
+  .notice{font-family:'Share Tech Mono',monospace;font-size:.65rem;color:var(--warn);margin-top:10px;padding:8px 12px;border:1px solid rgba(255,204,0,.2);border-radius:3px;background:rgba(255,204,0,.04)}
+
+  /* INPUTS */
+  .input-field{flex:1;min-width:280px;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;font-family:'Share Tech Mono',monospace;font-size:.8rem;border-radius:3px;outline:none;transition:border-color .2s,box-shadow .2s}
+  .input-field:focus{border-color:var(--accent2);box-shadow:0 0 10px rgba(0,196,255,.15)}
+  .input-field::placeholder{color:var(--text-mute)}
+
+  /* BUTTONS */
+  .btn{padding:10px 20px;border:none;border-radius:3px;font-family:'Orbitron',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .2s;text-transform:uppercase}
+  .btn-primary{background:linear-gradient(135deg,#006633,#00cc55);color:#000;box-shadow:0 0 15px rgba(0,255,106,.2)}
+  .btn-primary:hover:not(:disabled){box-shadow:0 0 25px rgba(0,255,106,.5);transform:translateY(-1px)}
+  .btn-secondary{background:transparent;color:var(--accent2);border:1px solid var(--accent2)}
+  .btn-secondary:hover:not(:disabled){background:rgba(0,196,255,.1)}
+  .btn-danger{background:transparent;color:var(--danger);border:1px solid var(--danger);font-size:.6rem}
+  .btn-danger:hover:not(:disabled){background:rgba(255,60,60,.1)}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+
+  /* CONTROLS */
+  .controls{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+  .control-panel{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:20px;position:relative;overflow:hidden}
+  .control-panel::before{position:absolute;top:-1px;left:16px;font-family:'Share Tech Mono',monospace;font-size:.6rem;background:var(--surface);padding:0 8px;letter-spacing:2px}
+  .panel-research::before{content:'ARAŞTIRMA KONTROLÜ';color:var(--accent)}
+  .panel-filter::before{content:'KATEGORİ FİLTRESİ';color:var(--accent3)}
+  .research-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+  .category-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+  .chip{padding:6px 14px;border-radius:2px;border:1px solid;font-family:'Share Tech Mono',monospace;font-size:.65rem;cursor:pointer;transition:all .2s;letter-spacing:1px;user-select:none}
+  .chip-crispr{border-color:#ff6bfd;color:#ff6bfd}
+  .chip-nootropics{border-color:#00ff6a;color:#00ff6a}
+  .chip-peptides{border-color:#00c4ff;color:#00c4ff}
+  .chip-longevity{border-color:#ffcc00;color:#ffcc00}
+  .chip-epigenetic{border-color:#ff8c42;color:#ff8c42}
+  .chip-mrna{border-color:#bd93f9;color:#bd93f9}
+  .chip-exosomes{border-color:#50fa7b;color:#50fa7b}
+  .chip-outofbox{border-color:#ff5555;color:#ff5555}
+  .chip.active{filter:brightness(1.5)}
+  .chip:not(.active){opacity:.35}
+  .chip:hover{opacity:1}
+
+  /* TERMINAL */
+  .terminal{background:#000;border:1px solid var(--border);border-radius:4px;padding:16px;margin-bottom:20px;height:140px;overflow-y:auto;font-family:'Share Tech Mono',monospace;font-size:.7rem;position:relative}
+  .terminal::before{content:'> SYSTEM LOG';position:absolute;top:-1px;left:12px;background:#000;color:var(--text-dim);padding:0 6px;font-size:.6rem;letter-spacing:2px}
+  .log-line{line-height:1.8;display:flex;gap:10px}
+  .log-time{color:var(--text-mute)}.log-info{color:var(--accent2)}.log-success{color:var(--accent)}
+  .log-warn{color:var(--warn)}.log-error{color:var(--danger)}.log-scan{color:var(--accent3)}
+
+  /* PROGRESS */
+  .progress-container{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:14px 18px;margin-bottom:20px;display:none;align-items:center;gap:14px}
+  .progress-container.visible{display:flex}
+  .progress-track{flex:1;height:6px;background:var(--text-mute);border-radius:3px;overflow:hidden}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:3px;transition:width .4s ease;box-shadow:0 0 10px var(--accent)}
+  .progress-text{font-family:'Share Tech Mono',monospace;font-size:.7rem;color:var(--text-dim);white-space:nowrap}
+
+  /* STATS */
+  .stats-row{display:grid;grid-template-columns:repeat(8,1fr);gap:8px;margin-bottom:20px}
+  .stat-box{background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:10px 8px;text-align:center}
+  .stat-num{font-family:'Orbitron',sans-serif;font-size:1.2rem;font-weight:700;display:block;transition:all .3s}
+  .stat-lbl{font-family:'Share Tech Mono',monospace;font-size:.52rem;color:var(--text-dim);display:block;letter-spacing:1px;margin-top:3px}
+
+  /* FINDINGS */
+  .findings-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+  .findings-title{font-family:'Orbitron',sans-serif;font-size:.8rem;font-weight:700;color:var(--accent);letter-spacing:3px;text-shadow:var(--glow)}
+  .search-input{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 14px;font-family:'Share Tech Mono',monospace;font-size:.72rem;border-radius:3px;outline:none;width:260px}
+  .search-input:focus{border-color:var(--accent)}
+  .search-input::placeholder{color:var(--text-mute)}
+  .findings-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:16px}
+
+  /* CARDS */
+  .finding-card{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:18px;position:relative;overflow:hidden;transition:all .3s;animation:cardIn .5s ease forwards}
+  @keyframes cardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  .finding-card:hover{border-color:var(--text-dim);transform:translateY(-2px);box-shadow:0 4px 24px rgba(0,0,0,.5)}
+  .finding-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%}
+  .card-crispr::before{background:#ff6bfd;box-shadow:0 0 8px #ff6bfd}
+  .card-nootropics::before{background:#00ff6a;box-shadow:0 0 8px #00ff6a}
+  .card-peptides::before{background:#00c4ff;box-shadow:0 0 8px #00c4ff}
+  .card-longevity::before{background:#ffcc00;box-shadow:0 0 8px #ffcc00}
+  .card-epigenetic::before{background:#ff8c42;box-shadow:0 0 8px #ff8c42}
+  .card-mrna::before{background:#bd93f9;box-shadow:0 0 8px #bd93f9}
+  .card-exosomes::before{background:#50fa7b;box-shadow:0 0 8px #50fa7b}
+  .card-outofbox::before{background:#ff5555;box-shadow:0 0 8px #ff5555}
+  .card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}
+  .card-title{font-family:'Rajdhani',sans-serif;font-size:.95rem;font-weight:600;color:var(--text);line-height:1.3}
+  .card-cat{font-family:'Share Tech Mono',monospace;font-size:.6rem;padding:3px 8px;border-radius:2px;border:1px solid;flex-shrink:0;letter-spacing:1px;text-transform:uppercase}
+  .cat-crispr{border-color:#ff6bfd;color:#ff6bfd;background:rgba(255,107,253,.07)}
+  .cat-nootropics{border-color:#00ff6a;color:#00ff6a;background:rgba(0,255,106,.07)}
+  .cat-peptides{border-color:#00c4ff;color:#00c4ff;background:rgba(0,196,255,.07)}
+  .cat-longevity{border-color:#ffcc00;color:#ffcc00;background:rgba(255,204,0,.07)}
+  .cat-epigenetic{border-color:#ff8c42;color:#ff8c42;background:rgba(255,140,66,.07)}
+  .cat-mrna{border-color:#bd93f9;color:#bd93f9;background:rgba(189,147,249,.07)}
+  .cat-exosomes{border-color:#50fa7b;color:#50fa7b;background:rgba(80,250,123,.07)}
+  .cat-outofbox{border-color:#ff5555;color:#ff5555;background:rgba(255,85,85,.07)}
+  .card-body{font-size:.82rem;color:#8fb89a;line-height:1.6;margin-bottom:12px}
+  .card-meta{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px}
+  .card-tags{display:flex;gap:6px;flex-wrap:wrap}
+  .tag{font-family:'Share Tech Mono',monospace;font-size:.58rem;color:var(--text-mute);background:rgba(255,255,255,.03);border:1px solid var(--text-mute);padding:2px 7px;border-radius:2px}
+  .card-time{font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--text-mute)}
+  .card-novelty{display:flex;gap:3px;align-items:center;margin-top:8px}
+  .novelty-bar{height:3px;width:20px;border-radius:1px;background:var(--text-mute);transition:all .3s}
+  .novelty-bar.filled{background:var(--accent)}
+  .novelty-label{font-family:'Share Tech Mono',monospace;font-size:.58rem;color:var(--text-dim);margin-left:6px}
+  .delete-btn{position:absolute;top:10px;right:10px;background:none;border:none;color:var(--text-mute);cursor:pointer;font-size:.75rem;opacity:0;transition:opacity .2s;padding:2px 6px}
+  .finding-card:hover .delete-btn{opacity:1}
+  .delete-btn:hover{color:var(--danger)}
+  .empty-state{text-align:center;padding:80px 20px;color:var(--text-dim);font-family:'Share Tech Mono',monospace;font-size:.8rem;line-height:2.5}
+  .empty-state .big{font-size:3rem;margin-bottom:12px}
+
+  ::-webkit-scrollbar{width:6px;height:6px}
+  ::-webkit-scrollbar-track{background:var(--bg)}
+  ::-webkit-scrollbar-thumb{background:var(--text-mute);border-radius:3px}
+  @media(max-width:768px){.controls{grid-template-columns:1fr}.findings-grid{grid-template-columns:1fr}.stats-row{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo-section">
+      <svg class="dna-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M16 6 C20 12,28 12,32 18 C28 24,20 24,16 30 C20 36,28 36,32 42" stroke="#00ff6a" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <path d="M32 6 C28 12,20 12,16 18 C20 24,28 24,32 30 C28 36,20 36,16 42" stroke="#00c4ff" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <line x1="16" y1="14" x2="32" y2="14" stroke="#00ff6a" stroke-width="1.5" opacity=".6"/>
+        <line x1="16" y1="22" x2="32" y2="22" stroke="#ff6bfd" stroke-width="1.5" opacity=".6"/>
+        <line x1="16" y1="30" x2="32" y2="30" stroke="#00c4ff" stroke-width="1.5" opacity=".6"/>
+        <line x1="16" y1="38" x2="32" y2="38" stroke="#00ff6a" stroke-width="1.5" opacity=".6"/>
+      </svg>
+      <div class="logo-text">
+        <h1>NEXA BIOTECH</h1>
+        <p>AUTONOMOUS RESEARCH INTELLIGENCE AGENT v2.6 · RENDER EDITION</p>
+      </div>
+    </div>
+    <div class="status-bar">
+      <div class="status-indicator">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText">HAZIR</span>
+      </div>
+      <div class="total-count" id="totalCount">000</div>
+    </div>
+  </div>
+
+  <!-- API KEY -->
+  <div class="api-section">
+    <div class="api-row">
+      <input type="password" class="input-field" id="apiKey"
+             placeholder="Gemini API Key (Render'da env var GEMINI_API_KEY varsa boş bırakın)">
+      <button class="btn btn-secondary" onclick="testApi()">TEST ET</button>
+      <button class="btn btn-danger" onclick="clearAll()">TÜM VERİYİ SİL</button>
+    </div>
+    <div class="notice">
+      ⚡ Render'da GEMINI_API_KEY environment variable set ettiyseniz buraya key girmenize gerek yok.
+    </div>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="controls">
+    <div class="control-panel panel-research">
+      <div class="research-actions" style="margin-top:10px">
+        <button class="btn btn-primary" id="scanBtn" onclick="runFullScan()">⬡ TAM TARAMA</button>
+        <button class="btn btn-secondary" id="singleBtn" onclick="runSingle()">▶ TEK KONU</button>
+        <button class="btn btn-secondary" id="autoBtn" onclick="toggleAuto()">⟳ OTO MOD</button>
+      </div>
+      <div style="margin-top:12px;font-family:'Share Tech Mono',monospace;font-size:.65rem;color:var(--text-mute);line-height:1.8">
+        TAM TARAMA → 8 kategoride Gemini deep research<br>
+        TEK KONU → Sıradaki kategoriye odaklanır<br>
+        OTO MOD → Her 30dk otomatik tam tarama
+      </div>
+    </div>
+    <div class="control-panel panel-filter">
+      <div class="category-chips" id="chips">
+        <div class="chip chip-crispr active"     data-cat="crispr"     onclick="toggleChip(this)">CRISPR/DNA</div>
+        <div class="chip chip-nootropics active" data-cat="nootropics" onclick="toggleChip(this)">NOOTROPİCS</div>
+        <div class="chip chip-peptides active"   data-cat="peptides"   onclick="toggleChip(this)">PEPTİDLER</div>
+        <div class="chip chip-longevity active"  data-cat="longevity"  onclick="toggleChip(this)">LONGEVİTY</div>
+        <div class="chip chip-epigenetic active" data-cat="epigenetic" onclick="toggleChip(this)">EPİGENETİK</div>
+        <div class="chip chip-mrna active"       data-cat="mrna"       onclick="toggleChip(this)">mRNA/sgRNA</div>
+        <div class="chip chip-exosomes active"   data-cat="exosomes"   onclick="toggleChip(this)">EXOSOMES</div>
+        <div class="chip chip-outofbox active"   data-cat="outofbox"   onclick="toggleChip(this)">OUT-OF-BOX</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TERMINAL -->
+  <div class="terminal" id="terminal">
+    <div class="log-line"><span class="log-time">00:00:00</span><span class="log-info">NEXA BIOTECH Research Agent başlatıldı — Render Edition</span></div>
+    <div class="log-line"><span class="log-time">00:00:01</span><span class="log-success">Backend: Flask + google-genai SDK aktif</span></div>
+    <div class="log-line"><span class="log-time">00:00:01</span><span class="log-success">Persistent storage hazır → Deduplication aktif</span></div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-container" id="progressBar">
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <div class="progress-text" id="progressText">0 / 8</div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-box"><span class="stat-num" style="color:#ff6bfd" id="s0">0</span><span class="stat-lbl">CRISPR</span></div>
+    <div class="stat-box"><span class="stat-num" style="color:#00ff6a" id="s1">0</span><span class="stat-lbl">NOOTROPİCS</span></div>
+    <div class="stat-box"><span class="stat-num" style="color:#00c4ff" id="s2">0</span><span class="stat-lbl">PEPTİDLER</span></div>
+    <div class="stat-box"><span class="stat-num" style="color:#ffcc00" id="s3">0</span><span class="stat-lbl">LONGEVİTY</span></div>
+    <div class="stat-box"><span class="stat-num" style="color:#ff8c42" id="s4">0</span><span class="stat-lbl">EPİGENETİK</span></div>
+    <div class="stat-box"><span class="stat-num" style="color:#bd93f9" id="s5">0</span><span class="stat-lbl">mRNA</span></div>
+    <div class="stat-box"><span class="stat-num" style="color:#50fa7b" id="s6">0</span><span class="stat-lbl">EXOSOMES</span></div>
+    <div class="stat-box"><span class="stat-num" style="color:#ff5555" id="s7">0</span><span class="stat-lbl">OUT-OF-BOX</span></div>
+  </div>
+
+  <!-- FINDINGS -->
+  <div class="findings-header">
+    <div class="findings-title">◈ ARAŞTIRMA VERİTABANI</div>
+    <input type="text" class="search-input" placeholder="Bulgularda ara..." id="searchInput" oninput="render()">
+  </div>
+  <div id="container"></div>
+</div>
+
+<script>
+const CATS = {
+  crispr:{label:'CRISPR/DNA'},nootropics:{label:'NOOTROPİCS'},peptides:{label:'PEPTİDLER'},
+  longevity:{label:'LONGEVİTY'},epigenetic:{label:'EPİGENETİK'},mrna:{label:'mRNA/sgRNA'},
+  exosomes:{label:'EXOSOMES'},outofbox:{label:'OUT-OF-BOX'}
+};
+const CAT_IDS = Object.keys(CATS);
+const STORAGE_KEY = 'nexa_v3';
+
+let findings = (() => { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]'); } catch { return []; } })();
+let scanning = false, autoInterval = null, topicIdx = 0;
+
+function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(findings)); } catch {} }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function log(msg, type='info') {
+  const t = document.getElementById('terminal');
+  const now = new Date();
+  const ts = [now.getHours(),now.getMinutes(),now.getSeconds()].map(x=>String(x).padStart(2,'0')).join(':');
+  const d = document.createElement('div');
+  d.className='log-line';
+  d.innerHTML=`<span class="log-time">${ts}</span><span class="log-${type}">${msg}</span>`;
+  t.appendChild(d);
+  t.scrollTop = t.scrollHeight;
+  while(t.children.length > 80) t.removeChild(t.children[1]);
+}
+
+function setStatus(txt, state='idle') {
+  document.getElementById('statusText').textContent = txt;
+  const d = document.getElementById('statusDot');
+  d.className = 'status-dot';
+  if(state==='active') d.classList.add('active');
+  if(state==='scanning') d.classList.add('scanning');
+}
+
+function isDup(title) {
+  const norm = s => s.toLowerCase().replace(/[^a-z0-9 ]/g,'').trim();
+  const words = norm(title).split(' ').filter(w=>w.length>3);
+  return findings.some(f => {
+    const fw = norm(f.title).split(' ').filter(w=>w.length>3);
+    if(!words.length) return false;
+    return words.filter(w=>fw.includes(w)).length / words.length > 0.6;
+  });
+}
+
+async function callBackend(endpoint, body) {
+  const resp = await fetch(endpoint, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(body)
+  });
+  return resp.json();
+}
+
+async function researchCat(catId) {
+  log(`→ ${CATS[catId].label} taranıyor...`, 'scan');
+  const apiKey = document.getElementById('apiKey').value.trim();
+  const data = await callBackend('/api/research', {category: catId, apiKey});
+  if(data.error) { log(`✗ ${data.error}`, 'error'); return 0; }
+  let added = 0;
+  for(const f of (data.findings || [])) {
+    if(!f.title) continue;
+    if(isDup(f.title)) { log(`⊘ Dup atlandı: ${f.title.slice(0,45)}...`, 'warn'); continue; }
+    findings.unshift({...f, id: Date.now()+Math.random(), timestamp: new Date().toISOString()});
+    log(`✓ ${f.title.slice(0,60)}`, 'success');
+    added++;
+  }
+  save(); updateStats(); render();
+  return added;
+}
+
+async function runFullScan() {
+  if(scanning) return;
+  const active = [...document.querySelectorAll('.chip.active')].map(c=>c.dataset.cat);
+  if(!active.length) return;
+  scanning = true;
+  setStatus('TARAMA AKTİF','scanning');
+  document.getElementById('scanBtn').disabled = true;
+  document.getElementById('singleBtn').disabled = true;
+  const pb = document.getElementById('progressBar');
+  pb.classList.add('visible');
+  log('━━ TAM TARAMA BAŞLIYOR ━━','success');
+  let done=0, total=0;
+  for(const cat of active) {
+    document.getElementById('progressFill').style.width = `${done/active.length*100}%`;
+    document.getElementById('progressText').textContent = `${done} / ${active.length}`;
+    try { total += await researchCat(cat); } catch(e) { log(`✗ ${e.message}`,'error'); }
+    done++;
+    await new Promise(r=>setTimeout(r,1500));
+  }
+  document.getElementById('progressFill').style.width = '100%';
+  document.getElementById('progressText').textContent = '✓ TAMAMLANDI';
+  log(`━━ TARAMA BİTTİ → ${total} yeni bulgu ━━`, 'success');
+  setTimeout(()=>pb.classList.remove('visible'), 3000);
+  scanning=false;
+  document.getElementById('scanBtn').disabled=false;
+  document.getElementById('singleBtn').disabled=false;
+  setStatus('HAZIR','active');
+}
+
+async function runSingle() {
+  if(scanning) return;
+  const active = [...document.querySelectorAll('.chip.active')].map(c=>c.dataset.cat);
+  if(!active.length) return;
+  const cat = active[topicIdx++ % active.length];
+  scanning=true; setStatus('TARAMA','scanning');
+  document.getElementById('singleBtn').disabled=true;
+  try { await researchCat(cat); } catch(e) { log(`✗ ${e.message}`,'error'); }
+  scanning=false; document.getElementById('singleBtn').disabled=false;
+  setStatus('HAZIR','active');
+}
+
+function toggleAuto() {
+  if(autoInterval) {
+    clearInterval(autoInterval); autoInterval=null;
+    log('⊘ Oto Mod KAPATILDI','warn'); setStatus('HAZIR','active');
+    document.getElementById('autoBtn').textContent='⟳ OTO MOD';
+    return;
+  }
+  log('⟳ Oto Mod AKTİF → 30dk','success'); setStatus('OTO MOD','active');
+  document.getElementById('autoBtn').textContent='⊘ OTO DURDUR';
+  runFullScan();
+  autoInterval = setInterval(runFullScan, 30*60*1000);
+}
+
+async function testApi() {
+  const apiKey = document.getElementById('apiKey').value.trim();
+  log('API test ediliyor...','info');
+  try {
+    const data = await callBackend('/api/test', {apiKey});
+    if(data.ok) { log(`✓ Gemini bağlantısı BAŞARILI: ${data.response}`,'success'); setStatus('API BAĞLI','active'); }
+    else { log(`✗ ${data.error||'Başarısız'}`,'error'); }
+  } catch(e) { log(`✗ Backend hatası: ${e.message}`,'error'); }
+}
+
+function toggleChip(el) { el.classList.toggle('active'); render(); }
+function clearAll() { if(!confirm('Tüm veri silinecek?')) return; findings=[]; save(); updateStats(); render(); log('⚠ Tüm veri silindi','warn'); }
+
+function updateStats() {
+  CAT_IDS.forEach((c,i) => document.getElementById(`s${i}`).textContent = findings.filter(f=>f.category===c).length);
+  document.getElementById('totalCount').textContent = String(findings.length).padStart(3,'0');
+}
+
+function render() {
+  const q = (document.getElementById('searchInput').value||'').toLowerCase();
+  const active = [...document.querySelectorAll('.chip.active')].map(c=>c.dataset.cat);
+  const filtered = findings.filter(f => {
+    if(!active.includes(f.category)) return false;
+    if(q) return (f.title+' '+f.body+' '+(f.tags||[]).join(' ')).toLowerCase().includes(q);
+    return true;
+  });
+  const c = document.getElementById('container');
+  if(!filtered.length) {
+    c.innerHTML=`<div class="empty-state"><div class="big">⬡</div>${findings.length===0?'API key girin ve tarama başlatın.':'Filtre koşuluna uyan bulgu yok.'}</div>`;
+    return;
+  }
+  const g = document.createElement('div'); g.className='findings-grid';
+  filtered.forEach(f => {
+    const ts = new Date(f.timestamp);
+    const timeStr = `${ts.toLocaleDateString('tr-TR')} ${ts.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}`;
+    const bars = Array(5).fill(0).map((_,i)=>`<div class="novelty-bar ${i<Math.ceil((f.noveltyScore||5)/2)?'filled':''}"></div>`).join('');
+    const d = document.createElement('div');
+    d.className=`finding-card card-${f.category}`;
+    d.innerHTML=`
+      <button class="delete-btn" onclick="del('${f.id}')">✕</button>
+      <div class="card-header">
+        <div class="card-title">${esc(f.title)}</div>
+        <div class="card-cat cat-${f.category}">${CATS[f.category]?.label||f.category}</div>
+      </div>
+      <div class="card-body">${esc(f.body)}</div>
+      <div class="card-meta">
+        <div class="card-tags">${(f.tags||[]).map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>
+        <div class="card-time">${timeStr}</div>
+      </div>
+      <div class="card-novelty">${bars}<span class="novelty-label">YENİLİK ${f.noveltyScore||'?'}/10</span></div>`;
+    g.appendChild(d);
+  });
+  c.innerHTML=''; c.appendChild(g);
+}
+
+function del(id) { findings=findings.filter(f=>String(f.id)!==String(id)); save(); updateStats(); render(); }
+
+updateStats(); render();
+if(findings.length) { log(`✓ ${findings.length} mevcut bulgu yüklendi`,'success'); setStatus('HAZIR','active'); }
+</script>
+</body>
+</html>
