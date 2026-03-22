@@ -3,6 +3,7 @@ NEXA BIOTECH — ULTRA AGENT SYSTEM
 4-agent pipeline: SCOUT → CRITIC → SYNTHESIZER → EVOLVER
 Self-evolving prompts, knowledge graph, distillation engine
 """
+from __future__ import annotations
 import os, json, re, time, logging, threading, uuid
 from datetime import datetime
 from flask import Flask, request, jsonify, render_template, Response, stream_with_context
@@ -63,7 +64,7 @@ STATE = load_state()
 STATE_LOCK = threading.Lock()
 
 # ─── SSE EVENT BUS ────────────────────────────────────────────────────────────
-_subscribers: list[list] = []
+_subscribers = []
 _sub_lock = threading.Lock()
 
 def sse_emit(event_type: str, data: dict):
@@ -90,7 +91,7 @@ def _retry_delay(e):
     m = re.search(r"retryDelay['\"]?\s*:\s*['\"](\d+(?:\.\d+)?)", str(e))
     return min(float(m.group(1)) + 3, 120) if m else BASE_WAIT
 
-def gemini_call(client, prompt: str, model_hint: str = None) -> tuple[str, str]:
+def gemini_call(client, prompt: str, model_hint: str = None) -> tuple:
     chain = [model_hint] + [m for m in MODELS if m != model_hint] if model_hint else MODELS
     last_err = None
     for model in chain:
@@ -494,7 +495,7 @@ def _is_dup(title: str, existing: set) -> bool:
 # ─── BACKGROUND RUNNER ────────────────────────────────────────────────────────
 _bg_thread = None
 _bg_stop   = threading.Event()
-_current_pipeline: AgentPipeline | None = None
+_current_pipeline = None
 
 def _bg_loop(pipeline: AgentPipeline, categories: list, interval_min: int):
     while not _bg_stop.is_set():
